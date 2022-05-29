@@ -1,9 +1,12 @@
 import express from "express";
 import api from "./api";
+import { sequelize } from "../models";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const port = 3000;
-const { sequelize } = require("../models");
 
 app.use(express.json());
 app.use("/api", api);

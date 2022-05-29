@@ -1,86 +1,45 @@
 import { Router } from "express";
-import { Auth } from '../../models';
 import { Post } from '../../models';
+import { verifyToken } from './middlewares';
+import { Auth } from '../../models';
 
 const router=Router();
 
-// 회원가입
-router.post('/auth/register', async(req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  
-  let lst = await Auth.findAll({
-    where: { email: email }
-  });
-
-  if (lst.length!==0){
-    return res.json({
-      error: "User already exist"
-    });
-  }
-
-  let lst1 = await Auth.create({
-    email: email,
-    password: password
-  });
+// 전체 글 조회
+router.get('/posts', verifyToken,async(req, res) => {
+  const postLst = await Post.findAll({});
   res.send({
-    data:{
-      user:{
-        id:lst1.id
-      }
-    }
-  })
-});
-
-// 로그인
-router.post('/auth/login', async(req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  
-  let lst = await Auth.findAll({
-    where: { 
-      email: email,
-      password: password
-    }
-  });
-  if (lst.length===0){
-    return res.json({
-      error: "User not exist"
-    });
-  }
-  res.send({data:{user:{id:lst[0].id}}});
-});
-
-// 글 목록 조회
-router.get('/posts', async(req, res) => {
-  let lst = await Post.findAll({});
-  res.send({
-    data:lst
+    data:postLst
   });
 });
 
 // 글 개별 항목 조회
-router.get('/post/:postId', async(req, res) => {
+router.get('/post/:postId',verifyToken, async(req, res) => {
   const {postId}=req.params;
-  let lst = await Post.findAll({
+  const postLst = await Post.findAll({
     where: { id: postId },
   });
 
-  if (lst.length===0){
+  if (postLst.length===0){
     return res.json({
       error: "Post not exist"
     });
   }
   res.send({
-    data:lst[0]
+    data:postLst[0]
   });
 });
 
 // 글 생성
-router.post('/posts', async(req, res) => {
-  let writer = Number(req.header("X-User-Id"));
+router.post('/posts',verifyToken, async(req, res) => {
+  const authLst = await Auth.findAll({
+    where: { 
+      email: req.decoded.email
+    }
+  });
+  const writer=authLst[0].id;
 
-  let lst = await Post.create({
+  const postLst = await Post.create({
     content: req.body.content,
     writer: writer
   });
@@ -88,24 +47,31 @@ router.post('/posts', async(req, res) => {
   res.send({
     data:{
       post:{
-        id:lst.id
+        id:postLst.id
       } 
     }
   }); 
 });
 
 // 특정 글 수정
-router.put('/posts/:postId', async(req, res) => {
+router.put('/posts/:postId', verifyToken, async(req, res) => {
   
   const {postId}=req.params;
-  let writer = req.header("X-User-Id");
-  let lst = await Post.findAll({
+
+  const postLst = await Post.findAll({
     where: { 
       id: postId
     }
-  })
+  });
 
-  if (lst.length===0 || writer !== lst[0].writer) {
+  const authLst = await Auth.findAll({
+    where: { 
+      email: req.decoded.email
+    }
+  });
+  const writer=String(authLst[0].id);
+
+  if (postLst.length===0 || writer !== postLst[0].writer) {
     return res.json({
       error: "Cannot modify post"
     });
@@ -125,16 +91,23 @@ router.put('/posts/:postId', async(req, res) => {
 });
 
 // 특정 글 삭제
-router.delete('/posts/:postId', async(req, res) => {
+router.delete('/posts/:postId',verifyToken, async(req, res) => {
   const {postId}=req.params;
-  let writer = req.header("X-User-Id");
-  let lst = await Post.findAll({
+  const postLst = await Post.findAll({
     where: { 
       id: postId
     }
-  })
+  });
 
-  if (lst.length===0 || writer !== lst[0].writer) {
+  const authLst = await Auth.findAll({
+    where: { 
+      email: req.decoded.email
+    }
+  });
+
+  const writer=String(authLst[0].id);
+  
+  if (postLst.length===0 || writer !== postLst[0].writer) {
     return res.json({
       error: "Cannot delete post"
     });
@@ -149,5 +122,4 @@ router.delete('/posts/:postId', async(req, res) => {
   });
 });
 
-
-export default router;
+module.exports = router;
