@@ -2,11 +2,18 @@ import express from "express";
 import api from "./api";
 import { sequelize } from "../models";
 import dotenv from 'dotenv';
+import cors from 'cors';
+
 
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = 4000;
+
+// app.use(cors({
+//   origin: "http://localhost:3000",
+//   credentials: true
+// }));
 
 app.use(express.json());
 app.use("/api", api);

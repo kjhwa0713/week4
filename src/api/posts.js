@@ -6,7 +6,7 @@ import { Auth } from '../../models';
 const router=Router();
 
 // 전체 글 조회
-router.get('/posts', verifyToken,async(req, res) => {
+router.get('/', verifyToken,async(req, res) => {
   const postLst = await Post.findAll({});
   res.send({
     data:postLst
@@ -31,7 +31,7 @@ router.get('/post/:postId',verifyToken, async(req, res) => {
 });
 
 // 글 생성
-router.post('/posts',verifyToken, async(req, res) => {
+router.post('/',verifyToken, async(req, res) => {
   const authLst = await Auth.findAll({
     where: { 
       email: req.decoded.email
@@ -54,7 +54,7 @@ router.post('/posts',verifyToken, async(req, res) => {
 });
 
 // 특정 글 수정
-router.put('/posts/:postId', verifyToken, async(req, res) => {
+router.put('/:postId', verifyToken, async(req, res) => {
   
   const {postId}=req.params;
 
@@ -91,7 +91,7 @@ router.put('/posts/:postId', verifyToken, async(req, res) => {
 });
 
 // 특정 글 삭제
-router.delete('/posts/:postId',verifyToken, async(req, res) => {
+router.delete('/:postId',verifyToken, async(req, res) => {
   const {postId}=req.params;
   const postLst = await Post.findAll({
     where: { 
