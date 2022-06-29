@@ -4,9 +4,7 @@ import { sequelize } from "../models";
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-
 dotenv.config();
-
 const app = express();
 const port = 4000;
 
